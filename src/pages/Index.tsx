@@ -19,6 +19,7 @@ import WeeklyDropCard from "@/components/foodbrite/WeeklyDropCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import heroImage from "@/assets/foodbrite-hero-clean.jpg";
+import foodbriteLogo from "@/assets/foodbrite-logo.jpg";
 
 const WHATSAPP_PHONE = "254748801610";
 const CALL_PHONE = "0748801610";
@@ -173,9 +174,18 @@ const Index = () => {
 
       <header className="section-shell pt-4 sm:pt-6">
         <div className="panel-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-          <div>
-            <p className="text-xl font-black uppercase tracking-[0.18em] text-brand">Foodbrite</p>
-            <p className="text-sm text-muted-foreground">Real Food, Real Flavor.</p>
+          <div className="flex items-center gap-3">
+            <img
+              src={foodbriteLogo}
+              alt="Foodbrite Kitchen KE logo"
+              className="h-14 w-14 rounded-full border border-border/70 object-cover shadow-soft"
+              width={96}
+              height={96}
+            />
+            <div>
+              <p className="text-xl font-black uppercase tracking-[0.18em] text-brand">Foodbrite Kitchen KE</p>
+              <p className="text-sm text-muted-foreground">Crafted with Culture. Served with Soul.</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span className="eyebrow">
@@ -532,9 +542,19 @@ const Index = () => {
 
       <footer className="section-shell py-10">
         <div className="panel-surface flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xl font-black uppercase tracking-[0.18em] text-brand">Foodbrite</p>
-            <p className="mt-2 text-sm text-muted-foreground">Foodbrite — Real Food, Real Flavor.</p>
+          <div className="flex items-center gap-3">
+            <img
+              src={foodbriteLogo}
+              alt="Foodbrite Kitchen KE logo"
+              className="h-16 w-16 rounded-full border border-border/70 object-cover shadow-soft"
+              width={96}
+              height={96}
+              loading="lazy"
+            />
+            <div>
+              <p className="text-xl font-black uppercase tracking-[0.18em] text-brand">Foodbrite Kitchen KE</p>
+              <p className="mt-2 text-sm text-muted-foreground">Taste • Culture • Power</p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-3 text-sm font-semibold">
             <a className="eyebrow" href={buildWhatsAppUrl("Hi Foodbrite, I would like to place an order.")} target="_blank" rel="noreferrer">
