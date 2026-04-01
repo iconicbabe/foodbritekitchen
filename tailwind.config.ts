@@ -13,12 +13,28 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        body: ["var(--font-body)"],
+        display: ["var(--font-display)"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          foreground: "hsl(var(--surface-foreground))",
+        },
+        highlight: {
+          DEFAULT: "hsl(var(--highlight))",
+          foreground: "hsl(var(--highlight-foreground))",
+        },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -63,6 +79,16 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      backgroundImage: {
+        "gradient-hero": "var(--gradient-hero)",
+        "gradient-warm": "var(--gradient-warm)",
+        "gradient-surface": "var(--gradient-surface)",
+      },
+      boxShadow: {
+        soft: "var(--shadow-soft)",
+        warm: "var(--shadow-warm)",
+        float: "var(--shadow-float)",
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -80,10 +106,30 @@ export default {
             height: "0",
           },
         },
+        "heat-pulse": {
+          "0%, 100%": {
+            transform: "scale(1)",
+            opacity: "0.4",
+          },
+          "50%": {
+            transform: "scale(1.08)",
+            opacity: "0.7",
+          },
+        },
+        float: {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-8px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "heat-pulse": "heat-pulse 6s ease-in-out infinite",
+        float: "float 7s ease-in-out infinite",
       },
     },
   },
