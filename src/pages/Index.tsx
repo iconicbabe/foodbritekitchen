@@ -13,6 +13,7 @@ import {
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import StickyReserveBar from "@/components/foodbrite/StickyReserveBar";
 import WeeklyDropCard from "@/components/foodbrite/WeeklyDropCard";
@@ -20,61 +21,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import heroImage from "@/assets/foodbrite-hero-clean.jpg";
 import foodbriteLogo from "@/assets/foodbrite-logo.jpg";
-
-const WHATSAPP_PHONE = "254748801610";
-const CALL_PHONE = "0748801610";
-
-type DropConfig = {
-  cookWeekday: number;
-  deadlineHour: number;
-  deadlineWeekday: number;
-  id: string;
-  mealName: string;
-  pickupWindow: string;
-  platesLeft: number;
-  portion: string;
-  price: number;
-  totalPlates: number;
-};
-
-const weeklyDropConfigs: DropConfig[] = [
-  {
-    id: "wednesday-drop",
-    mealName: "Chicken Stew + Rice",
-    price: 420,
-    portion: "Full plate, balanced portion with sukuma wiki and chapati add-on option.",
-    deadlineWeekday: 2,
-    deadlineHour: 20,
-    cookWeekday: 3,
-    platesLeft: 10,
-    totalPlates: 24,
-    pickupWindow: "Ready Wednesday from 12:30PM in Ruiru",
-  },
-  {
-    id: "friday-drop",
-    mealName: "Beef Stew + Ugali",
-    price: 450,
-    portion: "Hearty home-style plate built for lunch or early dinner.",
-    deadlineWeekday: 4,
-    deadlineHour: 20,
-    cookWeekday: 5,
-    platesLeft: 7,
-    totalPlates: 20,
-    pickupWindow: "Ready Friday from 1:00PM with delivery slots after 2PM",
-  },
-  {
-    id: "sunday-drop",
-    mealName: "Pilau + Kachumbari",
-    price: 480,
-    portion: "Weekend special plate with fragrant spices and generous serving.",
-    deadlineWeekday: 6,
-    deadlineHour: 20,
-    cookWeekday: 0,
-    platesLeft: 5,
-    totalPlates: 18,
-    pickupWindow: "Ready Sunday from 12:00PM, ideal for family lunch",
-  },
-];
+import {
+  FOODBRITE_CONTENT_UPDATED_EVENT,
+  buildWhatsAppUrl,
+  defaultFoodbriteContent,
+  formatHourLabel,
+  loadFoodbriteContent,
+  type FoodbriteContent,
+} from "@/lib/foodbrite-content";
 
 const testimonials = [
   {
@@ -118,21 +72,40 @@ const getNextWeekdayAt = (weekday: number, hour: number) => {
   return target;
 };
 
-const buildWhatsAppUrl = (message: string) => {
-  return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
-};
-
 const Index = () => {
   const [now, setNow] = useState(Date.now());
-  const [selectedDropId, setSelectedDropId] = useState(weeklyDropConfigs[0].id);
+  const [content, setContent] = useState<FoodbriteContent>(defaultFoodbriteContent);
+  const [selectedDropId, setSelectedDropId] = useState(defaultFoodbriteContent.weeklyDrops[0].id);
   const [customerName, setCustomerName] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [fulfillment, setFulfillment] = useState("Pickup");
+
+  const settings = content.settings;
+  const weeklyDropConfigs = content.weeklyDrops;
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const syncContent = () => setContent(loadFoodbriteContent());
+
+    syncContent();
+    window.addEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
+    window.addEventListener("storage", syncContent);
+
+    return () => {
+      window.removeEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
+      window.removeEventListener("storage", syncContent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!weeklyDropConfigs.some((drop) => drop.id === selectedDropId)) {
+      setSelectedDropId(weeklyDropConfigs[0].id);
+    }
+  }, [selectedDropId, weeklyDropConfigs]);
 
   const drops = useMemo(() => {
     return weeklyDropConfigs.map((drop) => {
@@ -147,11 +120,9 @@ const Index = () => {
         countdownLabel: formatCountdown(remainingTime),
         deadlineText: `Order before ${deadlineDate.toLocaleDateString("en-KE", {
           weekday: "long",
-        })} ${drop.deadlineHour === 12 ? "12PM" : `${drop.deadlineHour}PM`}`,
+        })} ${formatHourLabel(drop.deadlineHour)}`,
         remainingTime,
-        reserveMessage: `Hi Foodbrite, I'd like to reserve ${drop.mealName} for ${cookDate.toLocaleDateString("en-KE", {
-          weekday: "long",
-        })}.`,
+        reserveMessage: `Hi Foodbrite, I'd like to reserve ${drop.mealName} for ${cookDate.toLocaleDateString("en-KE", { weekday: "long" })}.`,
         reservedPercentage,
       };
     });
@@ -164,7 +135,18 @@ const Index = () => {
   const selectedDrop = drops.find((drop) => drop.id === selectedDropId) ?? drops[0];
 
   const quickReserveUrl = buildWhatsAppUrl(
+    settings.whatsappPhone,
     `Hi Foodbrite, I'm ${customerName || "a customer"} and I'd like to reserve ${quantity} ${quantity === "1" ? "plate" : "plates"} of ${selectedDrop.mealName} for ${selectedDrop.cookLabel}. ${fulfillment} please.`,
+  );
+
+  const instagramReserveUrl = buildWhatsAppUrl(
+    settings.whatsappPhone,
+    `Hi Foodbrite, I found you on Instagram and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
+  );
+
+  const tiktokReserveUrl = buildWhatsAppUrl(
+    settings.whatsappPhone,
+    `Hi Foodbrite, I found you on TikTok and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
   );
 
   return (
@@ -194,8 +176,11 @@ const Index = () => {
             </span>
             <span className="eyebrow">
               <Truck className="size-4" />
-              Delivery KES 50–100
+                {settings.deliveryBadgeText}
             </span>
+              <Button asChild size="sm" variant="warmOutline">
+                <Link to="/admin">Offline admin</Link>
+              </Button>
           </div>
         </div>
       </header>
@@ -215,7 +200,7 @@ const Index = () => {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild variant="hero" size="xl">
-                <a href={buildWhatsAppUrl(featuredDrop.reserveMessage)} target="_blank" rel="noreferrer">
+                <a href={buildWhatsAppUrl(settings.whatsappPhone, featuredDrop.reserveMessage)} target="_blank" rel="noreferrer">
                   <MessageCircle />
                   Reserve This Week&apos;s Meal
                 </a>
@@ -299,7 +284,7 @@ const Index = () => {
                 price={drop.price}
                 progressValue={drop.reservedPercentage}
                 totalPlates={drop.totalPlates}
-                onReserve={() => window.open(buildWhatsAppUrl(drop.reserveMessage), "_blank", "noopener,noreferrer")}
+                onReserve={() => window.open(buildWhatsAppUrl(settings.whatsappPhone, drop.reserveMessage), "_blank", "noopener,noreferrer")}
               />
             ))}
           </div>
@@ -434,7 +419,7 @@ const Index = () => {
                   </a>
                 </Button>
                 <Button asChild variant="warmOutline" size="xl">
-                  <a href={`tel:${CALL_PHONE}`}>
+                  <a href={`tel:${settings.callPhone}`}>
                     <Phone />
                     Call Now
                   </a>
@@ -472,15 +457,15 @@ const Index = () => {
                 <div className="mt-4 grid gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <MapPin className="text-primary" />
-                    <p>Pick up in Ruiru or request delivery around Ruiru and nearby estates.</p>
+                    <p>{settings.pickupNote}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Truck className="text-primary" />
-                    <p>Delivery fee ranges from KES 50–100 depending on distance.</p>
+                    <p>{settings.deliveryFeeNote}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="text-primary" />
-                    <p>Direct line: {CALL_PHONE}</p>
+                    <p>Direct line: {settings.callPhone}</p>
                   </div>
                 </div>
               </div>
@@ -520,16 +505,26 @@ const Index = () => {
                 <p className="mt-4 max-w-2xl text-brand-foreground/80">
                   Reserve today, confirm on WhatsApp, and let Foodbrite handle the fresh batch prep without over-ordering or uncertainty.
                 </p>
+                <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
+                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={instagramReserveUrl} target="_blank" rel="noreferrer">
+                    <MessageCircle className="size-4" />
+                    Order from Instagram
+                  </a>
+                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={tiktokReserveUrl} target="_blank" rel="noreferrer">
+                    <MessageCircle className="size-4" />
+                    Order from TikTok
+                  </a>
+                </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button asChild variant="hero" size="xl" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <a href={buildWhatsAppUrl(featuredDrop.reserveMessage)} target="_blank" rel="noreferrer">
+                  <a href={buildWhatsAppUrl(settings.whatsappPhone, featuredDrop.reserveMessage)} target="_blank" rel="noreferrer">
                     <MessageCircle />
                     Reserve via WhatsApp
                   </a>
                 </Button>
                 <Button asChild variant="warmOutline" size="xl" className="border-brand-foreground/20 bg-brand-foreground/10 text-brand-foreground hover:bg-brand-foreground/15 hover:text-brand-foreground">
-                  <a href={`tel:${CALL_PHONE}`}>
+                  <a href={`tel:${settings.callPhone}`}>
                     <Phone />
                     Call Now
                   </a>
@@ -557,18 +552,22 @@ const Index = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-3 text-sm font-semibold">
-            <a className="eyebrow" href={buildWhatsAppUrl("Hi Foodbrite, I would like to place an order.")} target="_blank" rel="noreferrer">
+            <a className="eyebrow" href={buildWhatsAppUrl(settings.whatsappPhone, "Hi Foodbrite, I would like to place an order.")} target="_blank" rel="noreferrer">
               <MessageCircle className="size-4" />
               WhatsApp
             </a>
-            <a className="eyebrow" href="https://www.instagram.com/foodbrite.ke" target="_blank" rel="noreferrer">
+            <a className="eyebrow" href={settings.instagramUrl} target="_blank" rel="noreferrer">
               Instagram
               <ArrowRight className="size-4" />
             </a>
-            <a className="eyebrow" href="https://www.tiktok.com/@foodbrite.ke" target="_blank" rel="noreferrer">
+            <a className="eyebrow" href={settings.tiktokUrl} target="_blank" rel="noreferrer">
               TikTok
               <ArrowRight className="size-4" />
             </a>
+            <Link className="eyebrow" to="/admin">
+              Admin editor
+              <ArrowRight className="size-4" />
+            </Link>
           </div>
         </div>
       </footer>
@@ -581,7 +580,7 @@ const Index = () => {
         <ChevronDown className="size-4" />
       </a>
 
-      <StickyReserveBar reserveHref={buildWhatsAppUrl(featuredDrop.reserveMessage)} callHref={`tel:${CALL_PHONE}`} />
+      <StickyReserveBar reserveHref={buildWhatsAppUrl(settings.whatsappPhone, featuredDrop.reserveMessage)} callHref={`tel:${settings.callPhone}`} />
     </div>
   );
 };
