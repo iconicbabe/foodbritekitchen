@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_credentials: {
+        Row: {
+          id: number
+          passcode_hash: string | null
+          salt: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          passcode_hash?: string | null
+          salt?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          passcode_hash?: string | null
+          salt?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          call_phone: string
+          delivery_badge_text: string
+          delivery_fee_note: string
+          id: number
+          instagram_url: string
+          pickup_note: string
+          tiktok_url: string
+          updated_at: string
+          whatsapp_phone: string
+        }
+        Insert: {
+          call_phone?: string
+          delivery_badge_text?: string
+          delivery_fee_note?: string
+          id?: number
+          instagram_url?: string
+          pickup_note?: string
+          tiktok_url?: string
+          updated_at?: string
+          whatsapp_phone?: string
+        }
+        Update: {
+          call_phone?: string
+          delivery_badge_text?: string
+          delivery_fee_note?: string
+          id?: number
+          instagram_url?: string
+          pickup_note?: string
+          tiktok_url?: string
+          updated_at?: string
+          whatsapp_phone?: string
+        }
+        Relationships: []
+      }
+      weekly_drops: {
+        Row: {
+          cook_weekday: number
+          created_at: string
+          deadline_hour: number
+          deadline_weekday: number
+          id: string
+          meal_name: string
+          pickup_window: string
+          plates_left: number
+          portion: string
+          price: number
+          sort_order: number
+          total_plates: number
+          updated_at: string
+        }
+        Insert: {
+          cook_weekday?: number
+          created_at?: string
+          deadline_hour?: number
+          deadline_weekday?: number
+          id?: string
+          meal_name: string
+          pickup_window?: string
+          plates_left?: number
+          portion?: string
+          price?: number
+          sort_order?: number
+          total_plates?: number
+          updated_at?: string
+        }
+        Update: {
+          cook_weekday?: number
+          created_at?: string
+          deadline_hour?: number
+          deadline_weekday?: number
+          id?: string
+          meal_name?: string
+          pickup_window?: string
+          plates_left?: number
+          portion?: string
+          price?: number
+          sort_order?: number
+          total_plates?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
