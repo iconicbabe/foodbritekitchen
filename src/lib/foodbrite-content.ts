@@ -28,7 +28,6 @@ export type FoodbriteContent = {
   weeklyDrops: WeeklyDropConfig[];
 };
 
-export const FOODBRITE_CONTENT_CACHE_KEY = "foodbrite-content-cache-v2";
 export const FOODBRITE_CONTENT_UPDATED_EVENT = "foodbrite-content-updated";
 
 export const weekdayOptions = [
@@ -61,8 +60,6 @@ export const createEmptyWeeklyDrop = (): WeeklyDropConfig => ({
   totalPlates: 24,
 });
 
-const cloneContent = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
 export const defaultFoodbriteContent: FoodbriteContent = {
   settings: {
     callPhone: "0748801610",
@@ -70,7 +67,8 @@ export const defaultFoodbriteContent: FoodbriteContent = {
     deliveryFeeNote:
       "Delivery starts from KES 50 and may go higher depending on distance from the pickup point in Ruiru.",
     instagramUrl: "https://www.instagram.com/foodbrite.ke",
-    pickupNote: "Pick up in Ruiru or request delivery around Ruiru and nearby estates.",
+    pickupNote:
+      "Pick up in Ruiru or request delivery around Ruiru and nearby estates.",
     tiktokUrl: "https://www.tiktok.com/@foodbrite.ke",
     whatsappPhone: "254748801610",
   },
@@ -79,7 +77,8 @@ export const defaultFoodbriteContent: FoodbriteContent = {
       id: "wednesday-drop",
       mealName: "Chicken Stew + Rice",
       price: 420,
-      portion: "Full plate, balanced portion with sukuma wiki and chapati add-on option.",
+      portion:
+        "Full plate, balanced portion with sukuma wiki and chapati add-on option.",
       deadlineWeekday: 2,
       deadlineHour: 20,
       cookWeekday: 3,
@@ -103,7 +102,8 @@ export const defaultFoodbriteContent: FoodbriteContent = {
       id: "sunday-drop",
       mealName: "Pilau + Kachumbari",
       price: 480,
-      portion: "Weekend special plate with fragrant spices and generous serving.",
+      portion:
+        "Weekend special plate with fragrant spices and generous serving.",
       deadlineWeekday: 6,
       deadlineHour: 20,
       cookWeekday: 0,
@@ -114,102 +114,103 @@ export const defaultFoodbriteContent: FoodbriteContent = {
   ],
 };
 
-const readCache = (): FoodbriteContent => {
-  if (typeof window === "undefined") return cloneContent(defaultFoodbriteContent);
+// ─── Supabase read ────────────────────────────────────────────────────────────
+
+export const loadFoodbriteContent = async (): Promise<FoodbriteContent> => {
   try {
-    const raw = window.localStorage.getItem(FOODBRITE_CONTENT_CACHE_KEY);
-    if (!raw) return cloneContent(defaultFoodbriteContent);
-    return JSON.parse(raw) as FoodbriteContent;
+    const [{ data: settingsRow }, { data: dropRows }] = await Promise.all([
+      supabase.from("site_settings").select("*").eq("id", 1).single(),
+      supabase
+        .from("weekly_drops")
+        .select("*")
+        .order("sort_order", { ascending: true }),
+    ]);
+
+    const settings: FoodbriteSettings = settingsRow
+      ? {
+          callPhone: settingsRow.call_phone,
+          deliveryBadgeText: settingsRow.delivery_badge_text,
+          deliveryFeeNote: settingsRow.delivery_fee_note,
+          instagramUrl: settingsRow.instagram_url,
+          pickupNote: settingsRow.pickup_note,
+          tiktokUrl: settingsRow.tiktok_url,
+          whatsappPhone: settingsRow.whatsapp_phone,
+        }
+      : defaultFoodbriteContent.settings;
+
+    const weeklyDrops: WeeklyDropConfig[] =
+      dropRows && dropRows.length > 0
+        ? dropRows.map((row) => ({
+            id: row.id,
+            mealName: row.meal_name,
+            price: row.price,
+            portion: row.portion,
+            deadlineWeekday: row.deadline_weekday,
+            deadlineHour: row.deadline_hour,
+            cookWeekday: row.cook_weekday,
+            platesLeft: row.plates_left,
+            totalPlates: row.total_plates,
+            pickupWindow: row.pickup_window,
+          }))
+        : defaultFoodbriteContent.weeklyDrops;
+
+    return { settings, weeklyDrops };
   } catch {
-    return cloneContent(defaultFoodbriteContent);
+    return { ...defaultFoodbriteContent };
   }
 };
 
-const writeCache = (content: FoodbriteContent) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(FOODBRITE_CONTENT_CACHE_KEY, JSON.stringify(content));
+// ─── Supabase write ───────────────────────────────────────────────────────────
+
+export const saveFoodbriteContent = async (content: FoodbriteContent) => {
+  const { settings, weeklyDrops } = content;
+
+  await supabase.from("site_settings").upsert({
+    id: 1,
+    call_phone: settings.callPhone,
+    delivery_badge_text: settings.deliveryBadgeText,
+    delivery_fee_note: settings.deliveryFeeNote,
+    instagram_url: settings.instagramUrl,
+    pickup_note: settings.pickupNote,
+    tiktok_url: settings.tiktokUrl,
+    whatsapp_phone: settings.whatsappPhone,
+  });
+
+  // Replace all drops atomically
+  await supabase
+    .from("weekly_drops")
+    .delete()
+    .neq("id", "__placeholder__");
+
+  await supabase.from("weekly_drops").insert(
+    weeklyDrops.map((drop, index) => ({
+      id: drop.id,
+      meal_name: drop.mealName,
+      price: drop.price,
+      portion: drop.portion,
+      deadline_weekday: drop.deadlineWeekday,
+      deadline_hour: drop.deadlineHour,
+      cook_weekday: drop.cookWeekday,
+      plates_left: drop.platesLeft,
+      total_plates: drop.totalPlates,
+      pickup_window: drop.pickupWindow,
+      sort_order: index,
+    }))
+  );
+
   window.dispatchEvent(new Event(FOODBRITE_CONTENT_UPDATED_EVENT));
 };
 
-/** Synchronous cached content — for first paint. */
-export const loadFoodbriteContent = (): FoodbriteContent => readCache();
-
-/** Fetch fresh content from Lovable Cloud and update cache. */
-export const fetchFoodbriteContent = async (): Promise<FoodbriteContent> => {
-  const [settingsRes, dropsRes] = await Promise.all([
-    supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
-    supabase.from("weekly_drops").select("*").order("sort_order", { ascending: true }),
-  ]);
-
-  const s = settingsRes.data;
-  const settings: FoodbriteSettings = s
-    ? {
-        callPhone: s.call_phone,
-        whatsappPhone: s.whatsapp_phone,
-        deliveryBadgeText: s.delivery_badge_text,
-        deliveryFeeNote: s.delivery_fee_note,
-        pickupNote: s.pickup_note,
-        instagramUrl: s.instagram_url,
-        tiktokUrl: s.tiktok_url,
-      }
-    : cloneContent(defaultFoodbriteContent.settings);
-
-  const drops: WeeklyDropConfig[] = (dropsRes.data ?? []).map((d) => ({
-    id: d.id,
-    mealName: d.meal_name,
-    price: Number(d.price),
-    portion: d.portion,
-    deadlineWeekday: d.deadline_weekday,
-    deadlineHour: d.deadline_hour,
-    cookWeekday: d.cook_weekday,
-    platesLeft: d.plates_left,
-    totalPlates: d.total_plates,
-    pickupWindow: d.pickup_window,
-  }));
-
-  const content: FoodbriteContent = {
-    settings,
-    weeklyDrops: drops.length > 0 ? drops : cloneContent(defaultFoodbriteContent.weeklyDrops),
-  };
-  writeCache(content);
-  return content;
+export const resetFoodbriteContent = async () => {
+  await saveFoodbriteContent(defaultFoodbriteContent);
+  return { ...defaultFoodbriteContent };
 };
 
-/** Subscribe to live updates from other devices. */
-export const subscribeFoodbriteContent = (onChange: () => void) => {
-  const channel = supabase
-    .channel("foodbrite-content")
-    .on("postgres_changes", { event: "*", schema: "public", table: "weekly_drops" }, onChange)
-    .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange)
-    .subscribe();
-  return () => {
-    supabase.removeChannel(channel);
-  };
-};
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const invokeAdmin = async <T = unknown>(payload: Record<string, unknown>): Promise<T> => {
-  const { data, error } = await supabase.functions.invoke("admin-manage", { body: payload });
-  if (error) throw error;
-  if (data && typeof data === "object" && "error" in data && (data as any).error) {
-    throw new Error((data as any).error);
-  }
-  return data as T;
+export const buildWhatsAppUrl = (phone: string, message: string) => {
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 };
-
-export const adminApi = {
-  status: () => invokeAdmin<{ isSetup: boolean }>({ action: "status" }),
-  setup: (passcode: string) => invokeAdmin<{ ok: true }>({ action: "setup", passcode }),
-  verify: (passcode: string) => invokeAdmin<{ ok: boolean; isSetup: boolean }>({ action: "verify", passcode }),
-  changePasscode: (current: string, next: string) =>
-    invokeAdmin<{ ok: true }>({ action: "change-passcode", current, next }),
-  saveSettings: (passcode: string, settings: FoodbriteSettings) =>
-    invokeAdmin<{ ok: true }>({ action: "save-settings", passcode, settings }),
-  saveDrops: (passcode: string, drops: WeeklyDropConfig[]) =>
-    invokeAdmin<{ ok: true }>({ action: "save-drops", passcode, drops }),
-};
-
-export const buildWhatsAppUrl = (phone: string, message: string) =>
-  `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
 export const formatHourLabel = (hour: number) => {
   const normalizedHour = ((Math.round(hour) % 24) + 24) % 24;
