@@ -90,24 +90,19 @@ const Index = () => {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const syncContent = () => setContent(loadFoodbriteContent());
+useEffect(() => {
+  const syncContent = async () => {
+    const loaded = await loadFoodbriteContent();
+    setContent(loaded);
+  };
 
-    syncContent();
-    fetchFoodbriteContent().then(setContent).catch(() => {});
-    const unsubscribe = subscribeFoodbriteContent(() => {
-      fetchFoodbriteContent().then(setContent).catch(() => {});
-    });
-    window.addEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
-    window.addEventListener("storage", syncContent);
+  syncContent();
+  window.addEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
 
-    return () => {
-      unsubscribe();
-      window.removeEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
-      window.removeEventListener("storage", syncContent);
-    };
-  }, []);
-
+  return () => {
+    window.removeEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
+  };
+}, []);
   useEffect(() => {
     if (!weeklyDropConfigs.some((drop) => drop.id === selectedDropId)) {
       setSelectedDropId(weeklyDropConfigs[0].id);
