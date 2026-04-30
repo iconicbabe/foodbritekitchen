@@ -25,8 +25,10 @@ import {
   FOODBRITE_CONTENT_UPDATED_EVENT,
   buildWhatsAppUrl,
   defaultFoodbriteContent,
+  fetchFoodbriteContent,
   formatHourLabel,
   loadFoodbriteContent,
+  subscribeFoodbriteContent,
   type FoodbriteContent,
 } from "@/lib/foodbrite-content";
 
@@ -92,10 +94,15 @@ const Index = () => {
     const syncContent = () => setContent(loadFoodbriteContent());
 
     syncContent();
+    fetchFoodbriteContent().then(setContent).catch(() => {});
+    const unsubscribe = subscribeFoodbriteContent(() => {
+      fetchFoodbriteContent().then(setContent).catch(() => {});
+    });
     window.addEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
     window.addEventListener("storage", syncContent);
 
     return () => {
+      unsubscribe();
       window.removeEventListener(FOODBRITE_CONTENT_UPDATED_EVENT, syncContent);
       window.removeEventListener("storage", syncContent);
     };
