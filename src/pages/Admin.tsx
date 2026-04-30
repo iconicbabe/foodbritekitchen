@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Lock, Plus, Save, Trash2 } from "lucide-react";
+import AdminGate from "@/components/foodbrite/AdminGate";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,8 @@ const Admin = () => {
   };
 
   return (
+    <AdminGate>
+      {(lock) => (
     <main className="section-shell py-6 sm:py-10">
       <div className="grid gap-6">
         <section className="panel-surface p-5 sm:p-7">
@@ -99,6 +102,10 @@ const Admin = () => {
                   <ArrowLeft />
                   Back to storefront
                 </Link>
+              </Button>
+              <Button variant="warmOutline" onClick={lock}>
+                <Lock />
+                Lock admin
               </Button>
               <Button variant="hero" onClick={handleSave}>
                 <Save />
@@ -324,6 +331,8 @@ const Admin = () => {
         </section>
       </div>
     </main>
+      )}
+    </AdminGate>
   );
 };
 
