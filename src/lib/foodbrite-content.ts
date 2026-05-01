@@ -160,7 +160,50 @@ export const loadFoodbriteContent = async (): Promise<FoodbriteContent> => {
   }
 };
 
-// ─── Supabase write ───────────────────────────────────────────────────────────
+export const fetchFoodbriteContent = loadFoodbriteContent;
+
+// ─── Realtime subscription ───────────────────────────────────────────────────
+
+export const subscribeFoodbriteContent = (onChange: () => void) => {
+  const channel = supabase
+    .channel("foodbrite-content")
+    .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "weekly_drops" }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(channel);
+  };
+};
+
+// ─── Admin API (calls the admin-manage edge function) ────────────────────────
+
+const invokeAdmin = async <T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> => {
+  const { data, error } = await supabase.functions.invoke("admin-manage", {
+    body: { action, ...payload },
+  });
+  if (error) {
+    const msg = (data as any)?.error || error.message || "Admin request failed.";
+    throw new Error(msg);
+  }
+  if (data && typeof data === "object" && "error" in data && (data as any).error) {
+    throw new Error((data as any).error);
+  }
+  return data as T;
+};
+
+export const adminApi = {
+  status: () => invokeAdmin<{ isSetup: boolean }>("status"),
+  setup: (passcode: string) => invokeAdmin<{ ok: true }>("setup", { passcode }),
+  verify: (passcode: string) => invokeAdmin<{ ok: boolean; isSetup: boolean }>("verify", { passcode }),
+  changePasscode: (current: string, next: string) =>
+    invokeAdmin<{ ok: true }>("change-passcode", { current, next }),
+  saveSettings: (passcode: string, settings: FoodbriteSettings) =>
+    invokeAdmin<{ ok: true }>("save-settings", { passcode, settings }),
+  saveDrops: (passcode: string, drops: WeeklyDropConfig[]) =>
+    invokeAdmin<{ ok: true }>("save-drops", { passcode, drops }),
+};
+
+// ─── Supabase write (legacy direct write — kept for reset only) ──────────────
 
 export const saveFoodbriteContent = async (content: FoodbriteContent) => {
   const { settings, weeklyDrops } = content;
