@@ -32,7 +32,7 @@ type AdminEditorProps = {
 
 const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
   const { toast } = useToast();
-  const [draft, setDraft] = useState<FoodbriteContent>(() => loadFoodbriteContent());
+  const [draft, setDraft] = useState<FoodbriteContent>(() => ({ ...defaultFoodbriteContent }));
   const [saveMessage, setSaveMessage] = useState("Loading latest from Lovable Cloud…");
   const [saving, setSaving] = useState(false);
 
