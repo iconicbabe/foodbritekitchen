@@ -285,6 +285,12 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
             ))}
           </div>
         </section>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrdersPanel passcode={passcode} />
+          </TabsContent>
+        </Tabs>
 
         <section className="panel-surface flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div>
