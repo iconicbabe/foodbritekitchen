@@ -159,6 +159,13 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           </div>
         </section>
 
+        <Tabs defaultValue="menu" className="w-full">
+          <TabsList>
+            <TabsTrigger value="menu">Menu & Settings</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="menu" className="grid gap-6">
         <section className="panel-surface p-5 sm:p-7">
           <div className="flex flex-col gap-2">
             <span className="eyebrow">Business settings</span>
