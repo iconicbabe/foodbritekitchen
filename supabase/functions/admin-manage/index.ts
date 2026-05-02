@@ -135,15 +135,20 @@ Deno.serve(async (req) => {
       if (insErr) throw insErr;
 
       // Decrement plates_left if drop exists (best-effort, don't fail order)
-      if (drop_id) {
-        const { data: drop } = await admin
-          .from("weekly_drops")
-          .select("plates_left")
-          .eq("id", drop_id)
-          .maybeSingle();
-        if (drop) {
-          const next = Math.max((drop.plates_left ?? 0) - quantity, 0);
-          await admin.from("weekly_drops").update({ plates_left: next }).eq("id", drop_id);
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(drop_id);
+      if (drop_id && isUuid) {
+        try {
+          const { data: drop } = await admin
+            .from("weekly_drops")
+            .select("plates_left")
+            .eq("id", drop_id)
+            .maybeSingle();
+          if (drop) {
+            const next = Math.max((drop.plates_left ?? 0) - quantity, 0);
+            await admin.from("weekly_drops").update({ plates_left: next }).eq("id", drop_id);
+          }
+        } catch (e) {
+          console.warn("plates_left decrement skipped:", e);
         }
       }
       return json(200, { ok: true });
