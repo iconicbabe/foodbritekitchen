@@ -35,6 +35,42 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          customer_name: string
+          drop_id: string
+          fulfillment: string
+          id: string
+          meal_name: string
+          phone: string
+          quantity: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          drop_id?: string
+          fulfillment?: string
+          id?: string
+          meal_name?: string
+          phone?: string
+          quantity?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          drop_id?: string
+          fulfillment?: string
+          id?: string
+          meal_name?: string
+          phone?: string
+          quantity?: number
+          status?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           call_phone: string
