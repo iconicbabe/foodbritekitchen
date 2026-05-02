@@ -117,6 +117,43 @@ Deno.serve(async (req) => {
       return json(200, result);
     }
 
+    // Public action: place an order and decrement plates_left.
+    if (action === "place-order") {
+      const o = body?.order ?? {};
+      const customer_name = String(o.customerName ?? "").trim().slice(0, 100);
+      const phone = String(o.phone ?? "").trim().slice(0, 30);
+      const drop_id = String(o.dropId ?? "").trim().slice(0, 100);
+      const meal_name = String(o.mealName ?? "").trim().slice(0, 200);
+      const quantity = Math.min(Math.max(parseInt(String(o.quantity ?? "1"), 10) || 1, 1), 50);
+      const fulfillment = o.fulfillment === "Delivery" ? "Delivery" : "Pickup";
+
+      if (!customer_name) return json(400, { error: "Customer name is required." });
+
+      const { error: insErr } = await admin.from("orders").insert({
+        customer_name, phone, drop_id, meal_name, quantity, fulfillment, status: "pending",
+      });
+      if (insErr) throw insErr;
+
+      // Decrement plates_left if drop exists (best-effort, don't fail order)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(drop_id);
+      if (drop_id && isUuid) {
+        try {
+          const { data: drop } = await admin
+            .from("weekly_drops")
+            .select("plates_left")
+            .eq("id", drop_id)
+            .maybeSingle();
+          if (drop) {
+            const next = Math.max((drop.plates_left ?? 0) - quantity, 0);
+            await admin.from("weekly_drops").update({ plates_left: next }).eq("id", drop_id);
+          }
+        } catch (e) {
+          console.warn("plates_left decrement skipped:", e);
+        }
+      }
+      return json(200, { ok: true });
+    }
+
     if (action === "change-passcode") {
       const current: string = body?.current ?? "";
       const next: string = body?.next ?? "";
@@ -175,6 +212,27 @@ Deno.serve(async (req) => {
         const { error: insErr } = await admin.from("weekly_drops").insert(rows);
         if (insErr) throw insErr;
       }
+      return json(200, { ok: true });
+    }
+
+    if (action === "list-orders") {
+      const { data, error } = await admin
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return json(200, { orders: data ?? [] });
+    }
+
+    if (action === "update-order-status") {
+      const id = String(body?.id ?? "");
+      const status = String(body?.status ?? "");
+      if (!id || !["pending", "confirmed", "cancelled"].includes(status)) {
+        return json(400, { error: "Invalid order id or status." });
+      }
+      const { error } = await admin.from("orders").update({ status }).eq("id", id);
+      if (error) throw error;
       return json(200, { ok: true });
     }
 

@@ -23,6 +23,7 @@ import heroImage from "@/assets/foodbrite-hero-clean.jpg";
 import foodbriteLogo from "@/assets/foodbrite-logo.jpg";
 import {
   FOODBRITE_CONTENT_UPDATED_EVENT,
+  adminApi,
   buildWhatsAppUrl,
   defaultFoodbriteContent,
   fetchFoodbriteContent,
@@ -414,11 +415,26 @@ useEffect(() => {
               </div>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button asChild variant="hero" size="xl">
-                  <a href={quickReserveUrl} target="_blank" rel="noreferrer">
-                    <MessageCircle />
-                    Send on WhatsApp
-                  </a>
+                <Button
+                  variant="hero"
+                  size="xl"
+                  onClick={async () => {
+                    try {
+                      await adminApi.placeOrder({
+                        customerName: customerName || "Anonymous",
+                        dropId: selectedDrop.id,
+                        mealName: selectedDrop.mealName,
+                        quantity: Number(quantity) || 1,
+                        fulfillment: fulfillment === "Delivery" ? "Delivery" : "Pickup",
+                      });
+                    } catch (err) {
+                      console.warn("Order save failed:", err);
+                    }
+                    window.open(quickReserveUrl, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <MessageCircle />
+                  Send on WhatsApp
                 </Button>
                 <Button asChild variant="warmOutline" size="xl">
                   <a href={`tel:${settings.callPhone}`}>

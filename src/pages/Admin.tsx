@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   adminApi,
@@ -16,6 +18,7 @@ import {
   loadFoodbriteContent,
   weekdayOptions,
   type FoodbriteContent,
+  type OrderRecord,
   type WeeklyDropConfig,
 } from "@/lib/foodbrite-content";
 
@@ -29,6 +32,137 @@ type AdminEditorProps = {
   lock: () => void;
   passcode: string;
 };
+
+const OrdersPanel = ({ passcode }: { passcode: string }) => {
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await adminApi.listOrders(passcode);
+      setOrders(res.orders);
+    } catch (err) {
+      toast({
+        title: "Couldn't load orders",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const updateStatus = async (id: string, status: "confirmed" | "cancelled") => {
+    try {
+      await adminApi.updateOrderStatus(passcode, id, status);
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+      toast({ title: `Order ${status}` });
+    } catch (err) {
+      toast({
+        title: "Update failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <section className="panel-surface p-5 sm:p-7">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <span className="eyebrow">Customer orders</span>
+          <h2 className="text-3xl font-semibold text-foreground">Reservations from the storefront</h2>
+          <p className="text-sm text-muted-foreground">
+            Every quick-reserve submission lands here. Mark each one as confirmed once you reach the customer, or cancel
+            if it falls through.
+          </p>
+        </div>
+        <Button variant="warmOutline" onClick={load} disabled={loading}>
+          <RefreshCw />
+          {loading ? "Refreshing…" : "Refresh"}
+        </Button>
+      </div>
+
+      <div className="mt-6 overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Customer</TableHead>
+              <TableHead>Meal</TableHead>
+              <TableHead>Qty</TableHead>
+              <TableHead>Fulfillment</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ordered</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  {loading ? "Loading…" : "No orders yet."}
+                </TableCell>
+              </TableRow>
+            ) : (
+              orders.map((o) => (
+                <TableRow key={o.id}>
+                  <TableCell className="font-medium">{o.customer_name}</TableCell>
+                  <TableCell>{o.meal_name || "—"}</TableCell>
+                  <TableCell>{o.quantity}</TableCell>
+                  <TableCell>{o.fulfillment}</TableCell>
+                  <TableCell>
+                    <span
+                      className={
+                        o.status === "confirmed"
+                          ? "text-highlight font-semibold"
+                          : o.status === "cancelled"
+                          ? "text-destructive font-semibold"
+                          : "text-muted-foreground font-semibold"
+                      }
+                    >
+                      {o.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(o.created_at).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="warmOutline"
+                        onClick={() => updateStatus(o.id, "confirmed")}
+                        disabled={o.status === "confirmed"}
+                      >
+                        Confirm
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="warmOutline"
+                        onClick={() => updateStatus(o.id, "cancelled")}
+                        disabled={o.status === "cancelled"}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </section>
+  );
+};
+
 
 const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
   const { toast } = useToast();
@@ -156,6 +290,13 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           </div>
         </section>
 
+        <Tabs defaultValue="menu" className="w-full">
+          <TabsList>
+            <TabsTrigger value="menu">Menu & Settings</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="menu" className="grid gap-6">
         <section className="panel-surface p-5 sm:p-7">
           <div className="flex flex-col gap-2">
             <span className="eyebrow">Business settings</span>
@@ -275,6 +416,12 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
             ))}
           </div>
         </section>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrdersPanel passcode={passcode} />
+          </TabsContent>
+        </Tabs>
 
         <section className="panel-surface flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div>

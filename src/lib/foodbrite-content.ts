@@ -191,6 +191,27 @@ const invokeAdmin = async <T = any>(action: string, payload: Record<string, unkn
   return data as T;
 };
 
+export type OrderRecord = {
+  id: string;
+  customer_name: string;
+  phone: string;
+  drop_id: string;
+  meal_name: string;
+  quantity: number;
+  fulfillment: string;
+  status: string;
+  created_at: string;
+};
+
+export type PlaceOrderInput = {
+  customerName: string;
+  phone?: string;
+  dropId: string;
+  mealName: string;
+  quantity: number;
+  fulfillment: "Pickup" | "Delivery";
+};
+
 export const adminApi = {
   status: () => invokeAdmin<{ isSetup: boolean }>("status"),
   setup: (passcode: string) => invokeAdmin<{ ok: true }>("setup", { passcode }),
@@ -201,6 +222,10 @@ export const adminApi = {
     invokeAdmin<{ ok: true }>("save-settings", { passcode, settings }),
   saveDrops: (passcode: string, drops: WeeklyDropConfig[]) =>
     invokeAdmin<{ ok: true }>("save-drops", { passcode, drops }),
+  placeOrder: (order: PlaceOrderInput) => invokeAdmin<{ ok: true }>("place-order", { order }),
+  listOrders: (passcode: string) => invokeAdmin<{ orders: OrderRecord[] }>("list-orders", { passcode }),
+  updateOrderStatus: (passcode: string, id: string, status: "pending" | "confirmed" | "cancelled") =>
+    invokeAdmin<{ ok: true }>("update-order-status", { passcode, id, status }),
 };
 
 // ─── Supabase write (legacy direct write — kept for reset only) ──────────────
