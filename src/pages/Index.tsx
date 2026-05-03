@@ -254,59 +254,6 @@ useEffect(() => {
             </div>
           </div>
         </section>
-
-        <section id="weekly-drop" className="section-shell scroll-mt-24 py-6 sm:py-10">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-3">
-              <span className="eyebrow">This week&apos;s food drop</span>
-              <h2 className="text-4xl font-semibold text-foreground">Reserve only what&apos;s cooking this week</h2>
-              <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-                No giant menu. No endless browsing. Just this week&apos;s 2–3 drop windows with hard deadlines and controlled portions.
-              </p>
-            </div>
-            <div className="panel-surface px-4 py-3 text-sm text-muted-foreground">
-              <p className="font-semibold text-foreground">{featuredDrop.platesLeft} plates left on the fastest-moving batch</p>
-              <p>Reserve early to avoid missing the cutoff.</p>
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {drops.map((drop) => (
-              <WeeklyDropCard
-                key={drop.id}
-                countdownLabel={drop.countdownLabel}
-                dayLabel={drop.cookLabel}
-                deadlineText={drop.deadlineText}
-                mealName={drop.mealName}
-                pickupWindow={drop.pickupWindow}
-                platesLeft={drop.platesLeft}
-                portion={drop.portion}
-                price={drop.price}
-                progressValue={drop.reservedPercentage}
-                totalPlates={drop.totalPlates}
-                onReserve={() => window.open(buildWhatsAppUrl(settings.whatsappPhone, drop.reserveMessage), "_blank", "noopener,noreferrer")}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="section-shell py-8">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: CalendarDays, title: "Check the weekly menu", text: "Browse this week's curated drops." },
-              { icon: MessageCircle, title: "Reserve on WhatsApp", text: "Confirm before the batch deadline." },
-              { icon: UtensilsCrossed, title: "Cooked fresh in batches", text: "Home-style flavor, consistent quality." },
-              { icon: Truck, title: "Pickup or delivery", text: "Smooth fulfillment around Ruiru." },
-            ].map((item) => (
-              <div key={item.title} className="panel-surface flex flex-col gap-2 p-4">
-                <item.icon className="text-primary" />
-                <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section id="quick-reserve" className="section-shell scroll-mt-24 py-8">
           <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="panel-surface p-6 sm:p-8">
@@ -419,6 +366,59 @@ useEffect(() => {
             </div>
           </div>
         </section>
+
+        <section id="weekly-drop" className="section-shell scroll-mt-24 py-6 sm:py-10">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-3">
+              <span className="eyebrow">This week&apos;s food drop</span>
+              <h2 className="text-4xl font-semibold text-foreground">Reserve only what&apos;s cooking this week</h2>
+              <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+                No giant menu. No endless browsing. Just this week&apos;s 2–3 drop windows with hard deadlines and controlled portions.
+              </p>
+            </div>
+            <div className="panel-surface px-4 py-3 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">{featuredDrop.platesLeft} plates left on the fastest-moving batch</p>
+              <p>Reserve early to avoid missing the cutoff.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-3">
+            {drops.map((drop) => (
+              <WeeklyDropCard
+                key={drop.id}
+                countdownLabel={drop.countdownLabel}
+                dayLabel={drop.cookLabel}
+                deadlineText={drop.deadlineText}
+                mealName={drop.mealName}
+                pickupWindow={drop.pickupWindow}
+                platesLeft={drop.platesLeft}
+                portion={drop.portion}
+                price={drop.price}
+                progressValue={drop.reservedPercentage}
+                totalPlates={drop.totalPlates}
+                onReserve={() => window.open(buildWhatsAppUrl(settings.whatsappPhone, drop.reserveMessage), "_blank", "noopener,noreferrer")}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="section-shell py-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: CalendarDays, title: "Check the weekly menu", text: "Browse this week's curated drops." },
+              { icon: MessageCircle, title: "Reserve on WhatsApp", text: "Confirm before the batch deadline." },
+              { icon: UtensilsCrossed, title: "Cooked fresh in batches", text: "Home-style flavor, consistent quality." },
+              { icon: Truck, title: "Pickup or delivery", text: "Smooth fulfillment around Ruiru." },
+            ].map((item) => (
+              <div key={item.title} className="panel-surface flex flex-col gap-2 p-4">
+                <item.icon className="text-primary" />
+                <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
 
         <section className="section-shell py-8">
           <div className="panel-surface p-6 sm:p-8">
