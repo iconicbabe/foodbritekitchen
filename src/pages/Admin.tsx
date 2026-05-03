@@ -324,6 +324,7 @@ const InsightsPanel = ({ orders, loading }: { orders: OrderRecord[]; loading: bo
 
 const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
   const { toast } = useToast();
+  const ordersState = useOrders(passcode);
   const [draft, setDraft] = useState<FoodbriteContent>(() => ({ ...defaultFoodbriteContent }));
   const [saveMessage, setSaveMessage] = useState("Loading latest from Lovable Cloud…");
   const [saving, setSaving] = useState(false);
