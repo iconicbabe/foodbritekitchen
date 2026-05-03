@@ -579,7 +579,17 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           </TabsContent>
 
           <TabsContent value="orders">
-            <OrdersPanel passcode={passcode} />
+            <OrdersPanel
+              passcode={passcode}
+              orders={ordersState.orders}
+              loading={ordersState.loading}
+              reload={ordersState.load}
+              onStatusChange={ordersState.setStatus}
+            />
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <InsightsPanel orders={ordersState.orders} loading={ordersState.loading} />
           </TabsContent>
         </Tabs>
 
