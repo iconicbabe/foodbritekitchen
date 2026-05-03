@@ -33,7 +33,32 @@ type AdminEditorProps = {
   passcode: string;
 };
 
-const OrdersPanel = ({ passcode }: { passcode: string }) => {
+type OrderStatus = "pending" | "confirmed" | "dispatched" | "delivered" | "cancelled";
+
+const STATUS_FLOW: OrderStatus[] = ["pending", "confirmed", "dispatched", "delivered"];
+
+const statusBadgeClass = (status: string) => {
+  switch (status) {
+    case "confirmed":
+      return "bg-blue-500/15 text-blue-600 border border-blue-500/30";
+    case "dispatched":
+      return "bg-orange-500/15 text-orange-600 border border-orange-500/30";
+    case "delivered":
+      return "bg-green-500/15 text-green-600 border border-green-500/30";
+    case "cancelled":
+      return "bg-red-500/15 text-red-600 border border-red-500/30";
+    default:
+      return "bg-muted text-muted-foreground border border-border";
+  }
+};
+
+const nextStatus = (current: string): OrderStatus | null => {
+  const idx = STATUS_FLOW.indexOf(current as OrderStatus);
+  if (idx === -1 || idx === STATUS_FLOW.length - 1) return null;
+  return STATUS_FLOW[idx + 1];
+};
+
+const useOrders = (passcode: string) => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,10 +84,31 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateStatus = async (id: string, status: "confirmed" | "cancelled") => {
+  const setStatus = (id: string, status: OrderStatus) =>
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+
+  return { orders, loading, load, setStatus };
+};
+
+const OrdersPanel = ({
+  passcode,
+  orders,
+  loading,
+  reload,
+  onStatusChange,
+}: {
+  passcode: string;
+  orders: OrderRecord[];
+  loading: boolean;
+  reload: () => void;
+  onStatusChange: (id: string, status: OrderStatus) => void;
+}) => {
+  const { toast } = useToast();
+
+  const updateStatus = async (id: string, status: OrderStatus) => {
     try {
       await adminApi.updateOrderStatus(passcode, id, status);
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+      onStatusChange(id, status);
       toast({ title: `Order ${status}` });
     } catch (err) {
       toast({
@@ -80,11 +126,10 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
           <span className="eyebrow">Customer orders</span>
           <h2 className="text-3xl font-semibold text-foreground">Reservations from the storefront</h2>
           <p className="text-sm text-muted-foreground">
-            Every quick-reserve submission lands here. Mark each one as confirmed once you reach the customer, or cancel
-            if it falls through.
+            Move each order through pending → confirmed → dispatched → delivered. Cancel any time if it falls through.
           </p>
         </div>
-        <Button variant="warmOutline" onClick={load} disabled={loading}>
+        <Button variant="warmOutline" onClick={reload} disabled={loading}>
           <RefreshCw />
           {loading ? "Refreshing…" : "Refresh"}
         </Button>
@@ -112,62 +157,54 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="font-medium">{o.customer_name}</TableCell>
-                  <TableCell>
-                    {o.phone ? (
-                      <a
-                        href={`tel:${o.phone.replace(/\s+/g, "")}`}
-                        className="text-primary underline-offset-2 hover:underline"
+              orders.map((o) => {
+                const next = nextStatus(o.status);
+                const terminal = o.status === "delivered" || o.status === "cancelled";
+                return (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-medium">{o.customer_name}</TableCell>
+                    <TableCell>
+                      {o.phone ? (
+                        <a
+                          href={`tel:${o.phone.replace(/\s+/g, "")}`}
+                          className="text-primary underline-offset-2 hover:underline"
+                        >
+                          {o.phone}
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>{o.meal_name || "—"}</TableCell>
+                    <TableCell>{o.quantity}</TableCell>
+                    <TableCell>{o.fulfillment}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusBadgeClass(o.status)}`}
                       >
-                        {o.phone}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>{o.meal_name || "—"}</TableCell>
-                  <TableCell>{o.quantity}</TableCell>
-                  <TableCell>{o.fulfillment}</TableCell>
-                  <TableCell>
-                    <span
-                      className={
-                        o.status === "confirmed"
-                          ? "text-highlight font-semibold"
-                          : o.status === "cancelled"
-                          ? "text-destructive font-semibold"
-                          : "text-muted-foreground font-semibold"
-                      }
-                    >
-                      {o.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(o.created_at).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="warmOutline"
-                        onClick={() => updateStatus(o.id, "confirmed")}
-                        disabled={o.status === "confirmed"}
-                      >
-                        Confirm
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="warmOutline"
-                        onClick={() => updateStatus(o.id, "cancelled")}
-                        disabled={o.status === "cancelled"}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {o.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(o.created_at).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {next && !terminal && (
+                          <Button size="sm" variant="warmOutline" onClick={() => updateStatus(o.id, next)}>
+                            Mark {next}
+                          </Button>
+                        )}
+                        {!terminal && (
+                          <Button size="sm" variant="warmOutline" onClick={() => updateStatus(o.id, "cancelled")}>
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -176,9 +213,118 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
   );
 };
 
+type MealInsight = {
+  mealName: string;
+  totalOrders: number;
+  totalQuantity: number;
+  confirmedCount: number;
+  confirmationRate: number;
+};
+
+const InsightsPanel = ({ orders, loading }: { orders: OrderRecord[]; loading: boolean }) => {
+  const insights = useMemo<MealInsight[]>(() => {
+    const map = new Map<string, MealInsight>();
+    for (const o of orders) {
+      const key = o.meal_name || "Unknown";
+      const cur = map.get(key) ?? {
+        mealName: key,
+        totalOrders: 0,
+        totalQuantity: 0,
+        confirmedCount: 0,
+        confirmationRate: 0,
+      };
+      cur.totalOrders += 1;
+      cur.totalQuantity += o.quantity || 0;
+      if (["confirmed", "dispatched", "delivered"].includes(o.status)) cur.confirmedCount += 1;
+      map.set(key, cur);
+    }
+    const arr = Array.from(map.values()).map((m) => ({
+      ...m,
+      confirmationRate: m.totalOrders ? m.confirmedCount / m.totalOrders : 0,
+    }));
+    arr.sort((a, b) => b.totalOrders - a.totalOrders);
+    return arr;
+  }, [orders]);
+
+  const bestSeller = insights[0]?.mealName;
+  const slowest = insights.length > 1 ? insights[insights.length - 1].mealName : undefined;
+
+  return (
+    <section className="panel-surface p-5 sm:p-7">
+      <div className="space-y-2">
+        <span className="eyebrow">Meal insights</span>
+        <h2 className="text-3xl font-semibold text-foreground">How each meal is performing</h2>
+        <p className="text-sm text-muted-foreground">
+          Aggregated from every order placed through the storefront.
+        </p>
+      </div>
+
+      {insights.length === 0 ? (
+        <p className="mt-6 text-sm text-muted-foreground">{loading ? "Loading…" : "No orders yet."}</p>
+      ) : (
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {insights.map((m) => {
+            const isBest = m.mealName === bestSeller;
+            const isSlow = m.mealName === slowest && slowest !== bestSeller;
+            return (
+              <article
+                key={m.mealName}
+                className={`rounded-[1.5rem] border p-5 ${
+                  isBest
+                    ? "border-green-500/40 bg-green-500/5"
+                    : isSlow
+                    ? "border-red-500/40 bg-red-500/5"
+                    : "border-border bg-card/70"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-semibold text-foreground">{m.mealName}</h3>
+                  {isBest && (
+                    <span className="rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-semibold text-green-600">
+                      🔥 Best seller
+                    </span>
+                  )}
+                  {isSlow && (
+                    <span className="rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-600">
+                      🐌 Slowest
+                    </span>
+                  )}
+                </div>
+                <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Orders</dt>
+                    <dd className="mt-1 text-2xl font-semibold text-foreground">{m.totalOrders}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Plates</dt>
+                    <dd className="mt-1 text-2xl font-semibold text-foreground">{m.totalQuantity}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Confirmed</dt>
+                    <dd className="mt-1 text-2xl font-semibold text-foreground">
+                      {Math.round(m.confirmationRate * 100)}%
+                    </dd>
+                  </div>
+                </dl>
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${Math.round(m.confirmationRate * 100)}%` }}
+                  />
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
+
 
 const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
   const { toast } = useToast();
+  const ordersState = useOrders(passcode);
   const [draft, setDraft] = useState<FoodbriteContent>(() => ({ ...defaultFoodbriteContent }));
   const [saveMessage, setSaveMessage] = useState("Loading latest from Lovable Cloud…");
   const [saving, setSaving] = useState(false);
@@ -307,6 +453,7 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           <TabsList>
             <TabsTrigger value="menu">Menu & Settings</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="menu" className="grid gap-6">
@@ -432,7 +579,17 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           </TabsContent>
 
           <TabsContent value="orders">
-            <OrdersPanel passcode={passcode} />
+            <OrdersPanel
+              passcode={passcode}
+              orders={ordersState.orders}
+              loading={ordersState.loading}
+              reload={ordersState.load}
+              onStatusChange={ordersState.setStatus}
+            />
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <InsightsPanel orders={ordersState.orders} loading={ordersState.loading} />
           </TabsContent>
         </Tabs>
 
