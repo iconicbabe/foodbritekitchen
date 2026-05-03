@@ -95,6 +95,7 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead>Meal</TableHead>
               <TableHead>Qty</TableHead>
               <TableHead>Fulfillment</TableHead>
@@ -106,7 +107,7 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   {loading ? "Loading…" : "No orders yet."}
                 </TableCell>
               </TableRow>
@@ -114,6 +115,18 @@ const OrdersPanel = ({ passcode }: { passcode: string }) => {
               orders.map((o) => (
                 <TableRow key={o.id}>
                   <TableCell className="font-medium">{o.customer_name}</TableCell>
+                  <TableCell>
+                    {o.phone ? (
+                      <a
+                        href={`tel:${o.phone.replace(/\s+/g, "")}`}
+                        className="text-primary underline-offset-2 hover:underline"
+                      >
+                        {o.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell>{o.meal_name || "—"}</TableCell>
                   <TableCell>{o.quantity}</TableCell>
                   <TableCell>{o.fulfillment}</TableCell>
