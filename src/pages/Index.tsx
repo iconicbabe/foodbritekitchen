@@ -2,14 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
-  CheckCircle2,
   ChevronDown,
   MapPin,
   MessageCircle,
   Phone,
   Quote,
-  ShieldCheck,
-  ShoppingBasket,
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
@@ -142,16 +139,6 @@ useEffect(() => {
     `Hi Foodbrite, I'm ${customerName || "a customer"} and I'd like to reserve ${quantity} ${quantity === "1" ? "plate" : "plates"} of ${selectedDrop.mealName} for ${selectedDrop.cookLabel}. ${fulfillment} please.`,
   );
 
-  const instagramReserveUrl = buildWhatsAppUrl(
-    settings.whatsappPhone,
-    `Hi Foodbrite, I found you on Instagram and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
-  );
-
-  const tiktokReserveUrl = buildWhatsAppUrl(
-    settings.whatsappPhone,
-    `Hi Foodbrite, I found you on TikTok and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
-  );
-
   return (
     <div className="relative overflow-x-hidden pb-28">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] hero-glow animate-heat-pulse blur-3xl" />
@@ -181,9 +168,6 @@ useEffect(() => {
               <Truck className="size-4" />
                 {settings.deliveryBadgeText}
             </span>
-              <Button asChild size="sm" variant="warmOutline">
-                <Link to="/admin">Offline admin</Link>
-              </Button>
           </div>
         </div>
       </header>
@@ -257,103 +241,6 @@ useEffect(() => {
             </div>
           </div>
         </section>
-
-        <section id="weekly-drop" className="section-shell scroll-mt-24 py-6 sm:py-10">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-3">
-              <span className="eyebrow">This week&apos;s food drop</span>
-              <h2 className="text-4xl font-semibold text-foreground">Reserve only what&apos;s cooking this week</h2>
-              <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-                No giant menu. No endless browsing. Just this week&apos;s 2–3 drop windows with hard deadlines and controlled portions.
-              </p>
-            </div>
-            <div className="panel-surface px-4 py-3 text-sm text-muted-foreground">
-              <p className="font-semibold text-foreground">{featuredDrop.platesLeft} plates left on the fastest-moving batch</p>
-              <p>Reserve early to avoid missing the cutoff.</p>
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {drops.map((drop) => (
-              <WeeklyDropCard
-                key={drop.id}
-                countdownLabel={drop.countdownLabel}
-                dayLabel={drop.cookLabel}
-                deadlineText={drop.deadlineText}
-                mealName={drop.mealName}
-                pickupWindow={drop.pickupWindow}
-                platesLeft={drop.platesLeft}
-                portion={drop.portion}
-                price={drop.price}
-                progressValue={drop.reservedPercentage}
-                totalPlates={drop.totalPlates}
-                onReserve={() => window.open(buildWhatsAppUrl(settings.whatsappPhone, drop.reserveMessage), "_blank", "noopener,noreferrer")}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="section-shell py-8">
-          <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="panel-surface grid gap-5 p-6">
-              <div className="space-y-3">
-                <span className="eyebrow">How it works</span>
-                <h2 className="text-3xl font-semibold text-foreground">A simple 4-step weekly ordering system</h2>
-              </div>
-              {[
-                "Check this week’s menu",
-                "Reserve your meal before deadline",
-                "We cook fresh in batches",
-                "Pick up or get delivery",
-              ].map((step, index) => (
-                <div key={step} className="flex items-start gap-4 rounded-[1.25rem] bg-secondary/55 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
-                    {index + 1}
-                  </div>
-                  <p className="pt-2 text-base font-semibold text-foreground">{step}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="panel-surface grid gap-5 p-6">
-              <div className="space-y-3">
-                <span className="eyebrow">Why Foodbrite</span>
-                <h2 className="text-3xl font-semibold text-foreground">Built for reliability, not random daily cooking</h2>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  {
-                    icon: ShieldCheck,
-                    title: "Consistent quality",
-                    text: "Meals are prepared only when ordered, so quality stays predictable.",
-                  },
-                  {
-                    icon: UtensilsCrossed,
-                    title: "Home-style flavor",
-                    text: "Balanced portions, practical menus, and warm Kenyan comfort food.",
-                  },
-                  {
-                    icon: ShoppingBasket,
-                    title: "Less decision fatigue",
-                    text: "You choose from a focused weekly drop instead of a crowded menu.",
-                  },
-                  {
-                    icon: Truck,
-                    title: "Operational control",
-                    text: "Limited quantities prevent over-ordering and keep fulfillment smooth.",
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-[1.25rem] border border-border/70 bg-card/70 p-4">
-                    <item.icon className="text-primary" />
-                    <h3 className="mt-4 text-xl font-semibold text-foreground">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section id="quick-reserve" className="section-shell scroll-mt-24 py-8">
           <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="panel-surface p-6 sm:p-8">
@@ -447,30 +334,6 @@ useEffect(() => {
 
             <div className="grid gap-5">
               <div className="panel-surface p-6">
-                <span className="eyebrow">Urgency & scarcity</span>
-                <h3 className="mt-4 text-2xl font-semibold text-foreground">Next batch closes soon — don&apos;t miss out</h3>
-                <div className="mt-5 rounded-[1.5rem] bg-gradient-hero p-5 text-primary-foreground shadow-warm">
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary-foreground/80">Fastest-moving meal</p>
-                  <p className="mt-2 text-2xl font-bold">{featuredDrop.mealName}</p>
-                  <p className="mt-1 text-primary-foreground/85">{featuredDrop.countdownLabel} • {featuredDrop.platesLeft} plates left</p>
-                </div>
-                <div className="mt-5 grid gap-3 text-sm text-muted-foreground">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>Only current weekly availability is shown, so customers move faster.</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>Deadlines keep production controlled and reduce last-minute chaos.</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>WhatsApp confirmation gives a familiar, high-conversion checkout path.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="panel-surface p-6">
                 <span className="eyebrow">Delivery & location</span>
                 <div className="mt-4 grid gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-3">
@@ -490,6 +353,59 @@ useEffect(() => {
             </div>
           </div>
         </section>
+
+        <section id="weekly-drop" className="section-shell scroll-mt-24 py-6 sm:py-10">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-3">
+              <span className="eyebrow">This week&apos;s food drop</span>
+              <h2 className="text-4xl font-semibold text-foreground">Reserve only what&apos;s cooking this week</h2>
+              <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+                No giant menu. No endless browsing. Just this week&apos;s 2–3 drop windows with hard deadlines and controlled portions.
+              </p>
+            </div>
+            <div className="panel-surface px-4 py-3 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">{featuredDrop.platesLeft} plates left on the fastest-moving batch</p>
+              <p>Reserve early to avoid missing the cutoff.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-3">
+            {drops.map((drop) => (
+              <WeeklyDropCard
+                key={drop.id}
+                countdownLabel={drop.countdownLabel}
+                dayLabel={drop.cookLabel}
+                deadlineText={drop.deadlineText}
+                mealName={drop.mealName}
+                pickupWindow={drop.pickupWindow}
+                platesLeft={drop.platesLeft}
+                portion={drop.portion}
+                price={drop.price}
+                progressValue={drop.reservedPercentage}
+                totalPlates={drop.totalPlates}
+                onReserve={() => window.open(buildWhatsAppUrl(settings.whatsappPhone, drop.reserveMessage), "_blank", "noopener,noreferrer")}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="section-shell py-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: CalendarDays, title: "Check the weekly menu", text: "Browse this week's curated drops." },
+              { icon: MessageCircle, title: "Reserve on WhatsApp", text: "Confirm before the batch deadline." },
+              { icon: UtensilsCrossed, title: "Cooked fresh in batches", text: "Home-style flavor, consistent quality." },
+              { icon: Truck, title: "Pickup or delivery", text: "Smooth fulfillment around Ruiru." },
+            ].map((item) => (
+              <div key={item.title} className="panel-surface flex flex-col gap-2 p-4">
+                <item.icon className="text-primary" />
+                <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
 
         <section className="section-shell py-8">
           <div className="panel-surface p-6 sm:p-8">
@@ -523,16 +439,6 @@ useEffect(() => {
                 <p className="mt-4 max-w-2xl text-brand-foreground/80">
                   Reserve today, confirm on WhatsApp, and let Foodbrite handle the fresh batch prep without over-ordering or uncertainty.
                 </p>
-                <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
-                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={instagramReserveUrl} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" />
-                    Order from Instagram
-                  </a>
-                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={tiktokReserveUrl} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" />
-                    Order from TikTok
-                  </a>
-                </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button asChild variant="hero" size="xl" className="bg-primary text-primary-foreground hover:bg-primary/90">
