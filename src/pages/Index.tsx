@@ -2,14 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
-  CheckCircle2,
   ChevronDown,
   MapPin,
   MessageCircle,
   Phone,
   Quote,
-  ShieldCheck,
-  ShoppingBasket,
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
