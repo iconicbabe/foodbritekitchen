@@ -77,6 +77,7 @@ const Index = () => {
   const [content, setContent] = useState<FoodbriteContent>(defaultFoodbriteContent);
   const [selectedDropId, setSelectedDropId] = useState(defaultFoodbriteContent.weeklyDrops[0].id);
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [fulfillment, setFulfillment] = useState("Pickup");
 
@@ -136,7 +137,7 @@ useEffect(() => {
 
   const quickReserveUrl = buildWhatsAppUrl(
     settings.whatsappPhone,
-    `Hi Foodbrite, I'm ${customerName || "a customer"} and I'd like to reserve ${quantity} ${quantity === "1" ? "plate" : "plates"} of ${selectedDrop.mealName} for ${selectedDrop.cookLabel}. ${fulfillment} please.`,
+    `Hi Foodbrite, I'm ${customerName || "a customer"}${customerPhone ? ` (${customerPhone})` : ""} and I'd like to reserve ${quantity} ${quantity === "1" ? "plate" : "plates"} of ${selectedDrop.mealName} for ${selectedDrop.cookLabel}. ${fulfillment} please.`,
   );
 
   return (
@@ -263,6 +264,19 @@ useEffect(() => {
                   />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
+                  <label className="text-sm font-semibold text-foreground" htmlFor="customer-phone">
+                    Your phone number
+                  </label>
+                  <Input
+                    id="customer-phone"
+                    type="tel"
+                    inputMode="tel"
+                    placeholder="e.g. 0712 345 678"
+                    value={customerPhone}
+                    onChange={(event) => setCustomerPhone(event.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
                   <label className="text-sm font-semibold text-foreground" htmlFor="meal-drop">
                     Pick this week&apos;s batch
                   </label>
@@ -309,6 +323,7 @@ useEffect(() => {
                     try {
                       await adminApi.placeOrder({
                         customerName: customerName || "Anonymous",
+                        phone: customerPhone,
                         dropId: selectedDrop.id,
                         mealName: selectedDrop.mealName,
                         quantity: Number(quantity) || 1,
