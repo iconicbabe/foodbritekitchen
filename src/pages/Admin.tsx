@@ -453,6 +453,7 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
           <TabsList>
             <TabsTrigger value="menu">Menu & Settings</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="menu" className="grid gap-6">
