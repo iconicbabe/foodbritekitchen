@@ -139,16 +139,6 @@ useEffect(() => {
     `Hi Foodbrite, I'm ${customerName || "a customer"} and I'd like to reserve ${quantity} ${quantity === "1" ? "plate" : "plates"} of ${selectedDrop.mealName} for ${selectedDrop.cookLabel}. ${fulfillment} please.`,
   );
 
-  const instagramReserveUrl = buildWhatsAppUrl(
-    settings.whatsappPhone,
-    `Hi Foodbrite, I found you on Instagram and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
-  );
-
-  const tiktokReserveUrl = buildWhatsAppUrl(
-    settings.whatsappPhone,
-    `Hi Foodbrite, I found you on TikTok and I want to reserve ${featuredDrop.mealName} for this week's batch.`,
-  );
-
   return (
     <div className="relative overflow-x-hidden pb-28">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] hero-glow animate-heat-pulse blur-3xl" />
