@@ -224,8 +224,11 @@ export const adminApi = {
     invokeAdmin<{ ok: true }>("save-drops", { passcode, drops }),
   placeOrder: (order: PlaceOrderInput) => invokeAdmin<{ ok: true }>("place-order", { order }),
   listOrders: (passcode: string) => invokeAdmin<{ orders: OrderRecord[] }>("list-orders", { passcode }),
-  updateOrderStatus: (passcode: string, id: string, status: "pending" | "confirmed" | "cancelled") =>
-    invokeAdmin<{ ok: true }>("update-order-status", { passcode, id, status }),
+  updateOrderStatus: (
+    passcode: string,
+    id: string,
+    status: "pending" | "confirmed" | "dispatched" | "delivered" | "cancelled",
+  ) => invokeAdmin<{ ok: true }>("update-order-status", { passcode, id, status }),
 };
 
 // ─── Supabase write (legacy direct write — kept for reset only) ──────────────
