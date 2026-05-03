@@ -181,9 +181,6 @@ useEffect(() => {
               <Truck className="size-4" />
                 {settings.deliveryBadgeText}
             </span>
-              <Button asChild size="sm" variant="warmOutline">
-                <Link to="/admin">Offline admin</Link>
-              </Button>
           </div>
         </div>
       </header>
@@ -294,63 +291,19 @@ useEffect(() => {
         </section>
 
         <section className="section-shell py-8">
-          <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="panel-surface grid gap-5 p-6">
-              <div className="space-y-3">
-                <span className="eyebrow">How it works</span>
-                <h2 className="text-3xl font-semibold text-foreground">A simple 4-step weekly ordering system</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: CalendarDays, title: "Check the weekly menu", text: "Browse this week's curated drops." },
+              { icon: MessageCircle, title: "Reserve on WhatsApp", text: "Confirm before the batch deadline." },
+              { icon: UtensilsCrossed, title: "Cooked fresh in batches", text: "Home-style flavor, consistent quality." },
+              { icon: Truck, title: "Pickup or delivery", text: "Smooth fulfillment around Ruiru." },
+            ].map((item) => (
+              <div key={item.title} className="panel-surface flex flex-col gap-2 p-4">
+                <item.icon className="text-primary" />
+                <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.text}</p>
               </div>
-              {[
-                "Check this week’s menu",
-                "Reserve your meal before deadline",
-                "We cook fresh in batches",
-                "Pick up or get delivery",
-              ].map((step, index) => (
-                <div key={step} className="flex items-start gap-4 rounded-[1.25rem] bg-secondary/55 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
-                    {index + 1}
-                  </div>
-                  <p className="pt-2 text-base font-semibold text-foreground">{step}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="panel-surface grid gap-5 p-6">
-              <div className="space-y-3">
-                <span className="eyebrow">Why Foodbrite</span>
-                <h2 className="text-3xl font-semibold text-foreground">Built for reliability, not random daily cooking</h2>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  {
-                    icon: ShieldCheck,
-                    title: "Consistent quality",
-                    text: "Meals are prepared only when ordered, so quality stays predictable.",
-                  },
-                  {
-                    icon: UtensilsCrossed,
-                    title: "Home-style flavor",
-                    text: "Balanced portions, practical menus, and warm Kenyan comfort food.",
-                  },
-                  {
-                    icon: ShoppingBasket,
-                    title: "Less decision fatigue",
-                    text: "You choose from a focused weekly drop instead of a crowded menu.",
-                  },
-                  {
-                    icon: Truck,
-                    title: "Operational control",
-                    text: "Limited quantities prevent over-ordering and keep fulfillment smooth.",
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-[1.25rem] border border-border/70 bg-card/70 p-4">
-                    <item.icon className="text-primary" />
-                    <h3 className="mt-4 text-xl font-semibold text-foreground">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -447,30 +400,6 @@ useEffect(() => {
 
             <div className="grid gap-5">
               <div className="panel-surface p-6">
-                <span className="eyebrow">Urgency & scarcity</span>
-                <h3 className="mt-4 text-2xl font-semibold text-foreground">Next batch closes soon — don&apos;t miss out</h3>
-                <div className="mt-5 rounded-[1.5rem] bg-gradient-hero p-5 text-primary-foreground shadow-warm">
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary-foreground/80">Fastest-moving meal</p>
-                  <p className="mt-2 text-2xl font-bold">{featuredDrop.mealName}</p>
-                  <p className="mt-1 text-primary-foreground/85">{featuredDrop.countdownLabel} • {featuredDrop.platesLeft} plates left</p>
-                </div>
-                <div className="mt-5 grid gap-3 text-sm text-muted-foreground">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>Only current weekly availability is shown, so customers move faster.</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>Deadlines keep production controlled and reduce last-minute chaos.</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 text-highlight" />
-                    <p>WhatsApp confirmation gives a familiar, high-conversion checkout path.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="panel-surface p-6">
                 <span className="eyebrow">Delivery & location</span>
                 <div className="mt-4 grid gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-3">
@@ -523,16 +452,6 @@ useEffect(() => {
                 <p className="mt-4 max-w-2xl text-brand-foreground/80">
                   Reserve today, confirm on WhatsApp, and let Foodbrite handle the fresh batch prep without over-ordering or uncertainty.
                 </p>
-                <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
-                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={instagramReserveUrl} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" />
-                    Order from Instagram
-                  </a>
-                  <a className="eyebrow bg-brand-foreground/10 text-brand-foreground" href={tiktokReserveUrl} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" />
-                    Order from TikTok
-                  </a>
-                </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button asChild variant="hero" size="xl" className="bg-primary text-primary-foreground hover:bg-primary/90">
