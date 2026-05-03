@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
     if (action === "update-order-status") {
       const id = String(body?.id ?? "");
       const status = String(body?.status ?? "");
-      if (!id || !["pending", "confirmed", "cancelled"].includes(status)) {
+      if (!id || !["pending", "confirmed", "dispatched", "delivered", "cancelled"].includes(status)) {
         return json(400, { error: "Invalid order id or status." });
       }
       const { error } = await admin.from("orders").update({ status }).eq("id", id);
