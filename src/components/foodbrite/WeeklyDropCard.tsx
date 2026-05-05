@@ -6,6 +6,7 @@ interface WeeklyDropCardProps {
   countdownLabel: string;
   dayLabel: string;
   deadlineText: string;
+  imageUrl?: string;
   mealName: string;
   pickupWindow: string;
   platesLeft: number;
@@ -20,6 +21,7 @@ const WeeklyDropCard = ({
   countdownLabel,
   dayLabel,
   deadlineText,
+  imageUrl,
   mealName,
   pickupWindow,
   platesLeft,
@@ -31,6 +33,16 @@ const WeeklyDropCard = ({
 }: WeeklyDropCardProps) => {
   return (
     <article className="panel-surface grid gap-5 p-5 md:p-6">
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={`${mealName} plate`}
+          loading="lazy"
+          width={1024}
+          height={768}
+          className="aspect-[4/3] w-full rounded-[1.5rem] object-cover shadow-soft"
+        />
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow">{dayLabel}</p>
