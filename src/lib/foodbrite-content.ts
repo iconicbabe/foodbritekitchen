@@ -1,10 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
+import chickenStewRiceImage from "@/assets/meal-chicken-stew-rice.jpg";
+import beefStewUgaliImage from "@/assets/meal-beef-stew-ugali.jpg";
+import pilauKachumbariImage from "@/assets/meal-pilau-kachumbari.jpg";
 
 export type WeeklyDropConfig = {
   cookWeekday: number;
   deadlineHour: number;
   deadlineWeekday: number;
   id: string;
+  imageUrl?: string;
   mealName: string;
   pickupWindow: string;
   platesLeft: number;
@@ -76,6 +80,7 @@ export const defaultFoodbriteContent: FoodbriteContent = {
     {
       id: "wednesday-drop",
       mealName: "Chicken Stew + Rice",
+      imageUrl: chickenStewRiceImage,
       price: 420,
       portion:
         "Full plate, balanced portion with sukuma wiki and chapati add-on option.",
@@ -89,6 +94,7 @@ export const defaultFoodbriteContent: FoodbriteContent = {
     {
       id: "friday-drop",
       mealName: "Beef Stew + Ugali",
+      imageUrl: beefStewUgaliImage,
       price: 450,
       portion: "Hearty home-style plate built for lunch or early dinner.",
       deadlineWeekday: 4,
@@ -101,6 +107,7 @@ export const defaultFoodbriteContent: FoodbriteContent = {
     {
       id: "sunday-drop",
       mealName: "Pilau + Kachumbari",
+      imageUrl: pilauKachumbariImage,
       price: 480,
       portion:
         "Weekend special plate with fragrant spices and generous serving.",
@@ -143,6 +150,7 @@ export const loadFoodbriteContent = async (): Promise<FoodbriteContent> => {
         ? dropRows.map((row) => ({
             id: row.id,
             mealName: row.meal_name,
+            imageUrl: (row as any).meal_image_url ?? undefined,
             price: row.price,
             portion: row.portion,
             deadlineWeekday: row.deadline_weekday,
@@ -265,6 +273,7 @@ export const saveFoodbriteContent = async (content: FoodbriteContent) => {
       plates_left: drop.platesLeft,
       total_plates: drop.totalPlates,
       pickup_window: drop.pickupWindow,
+      meal_image_url: drop.imageUrl ?? null,
       sort_order: index,
     }))
   );

@@ -568,6 +568,22 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
                     <Input id={`pickup-window-${drop.id}`} value={drop.pickupWindow} onChange={(e) => updateDrop(drop.id, "pickupWindow", e.target.value)} />
                   </div>
                   <div className="grid gap-2 md:col-span-2 xl:col-span-4">
+                    <Label htmlFor={`image-url-${drop.id}`}>Meal photo URL (optional)</Label>
+                    <Input
+                      id={`image-url-${drop.id}`}
+                      placeholder="https://… or leave blank for no image"
+                      value={drop.imageUrl ?? ""}
+                      onChange={(e) => updateDrop(drop.id, "imageUrl", e.target.value || undefined)}
+                    />
+                    {drop.imageUrl ? (
+                      <img
+                        src={drop.imageUrl}
+                        alt={`${drop.mealName} preview`}
+                        className="mt-2 aspect-[4/3] w-full max-w-xs rounded-2xl object-cover shadow-soft"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="grid gap-2 md:col-span-2 xl:col-span-4">
                     <Label htmlFor={`portion-${drop.id}`}>Portion description</Label>
                     <textarea id={`portion-${drop.id}`} className={textareaClassName} value={drop.portion} onChange={(e) => updateDrop(drop.id, "portion", e.target.value)} />
                   </div>

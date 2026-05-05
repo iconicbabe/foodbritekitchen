@@ -1,0 +1,1 @@
+ALTER TABLE public.weekly_drops ADD COLUMN IF NOT EXISTS meal_image_url text;

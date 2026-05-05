@@ -114,6 +114,7 @@ export type Database = {
           deadline_hour: number
           deadline_weekday: number
           id: string
+          meal_image_url: string | null
           meal_name: string
           pickup_window: string
           plates_left: number
@@ -129,6 +130,7 @@ export type Database = {
           deadline_hour?: number
           deadline_weekday?: number
           id?: string
+          meal_image_url?: string | null
           meal_name: string
           pickup_window?: string
           plates_left?: number
@@ -144,6 +146,7 @@ export type Database = {
           deadline_hour?: number
           deadline_weekday?: number
           id?: string
+          meal_image_url?: string | null
           meal_name?: string
           pickup_window?: string
           plates_left?: number

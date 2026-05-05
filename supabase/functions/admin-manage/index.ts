@@ -207,6 +207,7 @@ Deno.serve(async (req) => {
           plates_left: Number(d.platesLeft) || 0,
           total_plates: Number(d.totalPlates) || 1,
           pickup_window: String(d.pickupWindow ?? ""),
+          meal_image_url: d.imageUrl ? String(d.imageUrl) : null,
           sort_order: idx,
         }));
         const { error: insErr } = await admin.from("weekly_drops").insert(rows);
