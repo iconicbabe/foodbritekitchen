@@ -273,6 +273,7 @@ export const saveFoodbriteContent = async (content: FoodbriteContent) => {
       plates_left: drop.platesLeft,
       total_plates: drop.totalPlates,
       pickup_window: drop.pickupWindow,
+      meal_image_url: drop.imageUrl ?? null,
       sort_order: index,
     }))
   );
