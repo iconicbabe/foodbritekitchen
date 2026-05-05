@@ -391,6 +391,7 @@ useEffect(() => {
                 countdownLabel={drop.countdownLabel}
                 dayLabel={drop.cookLabel}
                 deadlineText={drop.deadlineText}
+                imageUrl={drop.imageUrl}
                 mealName={drop.mealName}
                 pickupWindow={drop.pickupWindow}
                 platesLeft={drop.platesLeft}
