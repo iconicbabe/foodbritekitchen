@@ -1,10 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
+import chickenStewRiceImage from "@/assets/meal-chicken-stew-rice.jpg";
+import beefStewUgaliImage from "@/assets/meal-beef-stew-ugali.jpg";
+import pilauKachumbariImage from "@/assets/meal-pilau-kachumbari.jpg";
 
 export type WeeklyDropConfig = {
   cookWeekday: number;
   deadlineHour: number;
   deadlineWeekday: number;
   id: string;
+  imageUrl?: string;
   mealName: string;
   pickupWindow: string;
   platesLeft: number;
