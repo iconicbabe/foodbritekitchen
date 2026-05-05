@@ -150,6 +150,7 @@ export const loadFoodbriteContent = async (): Promise<FoodbriteContent> => {
         ? dropRows.map((row) => ({
             id: row.id,
             mealName: row.meal_name,
+            imageUrl: (row as any).meal_image_url ?? undefined,
             price: row.price,
             portion: row.portion,
             deadlineWeekday: row.deadline_weekday,
