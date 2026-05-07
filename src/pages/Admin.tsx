@@ -340,6 +340,18 @@ const AdminEditor = ({ lock, passcode }: AdminEditorProps) => {
       });
   }, []);
 
+  useEffect(() => {
+    document.title = "Admin Console | Foodbrite Kitchen";
+    const href = `https://foodbritekitchen.lovable.app${window.location.pathname}`;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = href;
+  }, []);
+
   const totalOpenPlates = useMemo(
     () => draft.weeklyDrops.reduce((sum, drop) => sum + Math.max(drop.platesLeft, 0), 0),
     [draft.weeklyDrops],

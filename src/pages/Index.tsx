@@ -89,6 +89,17 @@ const Index = () => {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const href = `https://foodbritekitchen.lovable.app${window.location.pathname}`;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = href;
+  }, []);
+
 useEffect(() => {
   const syncContent = async () => {
     const loaded = await loadFoodbriteContent();
